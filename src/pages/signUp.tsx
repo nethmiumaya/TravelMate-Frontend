@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'lucide-react';
+import axios from 'axios';
 
 const SignUp: React.FC = () => {
     const [credentials, setCredentials] = useState({
@@ -11,6 +12,22 @@ const SignUp: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        try {
+            const response = await axios.post('http://localhost:5000/api/auth/signup', {
+                name: credentials.name,
+                email: credentials.email,
+                password: credentials.newPassword,
+            });
+
+            if (response.data.success) {
+                // Handle successful sign-up (e.g., navigate to login page or show a success message)
+            } else {
+                throw new Error(response.data.message || 'Sign-up failed');
+            }
+        } catch (err) {
+            // Handle sign-up error (e.g., show an error message)
+        }
     };
 
     return (
