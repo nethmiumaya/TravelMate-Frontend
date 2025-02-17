@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
-import type { RootState } from '../store/store.ts';
+import type { RootState } from '../store/store';
 import { User, Lock } from 'lucide-react';
-import {loginFailure, loginStart, loginSuccess} from "../slices/loginSlice.ts";
+import { loginFailure, loginStart, loginSuccess } from '../slices/loginSlice';
 
 const LoginForm: React.FC = () => {
     const [credentials, setCredentials] = useState({
-        username: '',
+        email: '',
         password: '',
         rememberMe: false,
     });
@@ -21,13 +22,16 @@ const LoginForm: React.FC = () => {
         dispatch(loginStart());
 
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const response = await axios.post('http://localhost:5000/api/auth/login', {
+                email: credentials.email,
+                password: credentials.password,
+            });
 
-            if (credentials.username && credentials.password) {
-                dispatch(loginSuccess(credentials.username));
+            if (response.data.token) {
+                dispatch(loginSuccess(credentials.email));
                 navigate('/home'); // Navigate to the home page after successful login
             } else {
-                throw new Error('Please fill in all fields');
+                throw new Error(response.data.message || 'Login failed');
             }
         } catch (err) {
             dispatch(loginFailure(err instanceof Error ? err.message : 'Login failed'));
@@ -43,11 +47,11 @@ const LoginForm: React.FC = () => {
                         <div className="input-box relative">
                             <User className="icon" />
                             <input
-                                type="text"
-                                placeholder="Username or Email"
+                                type="email"
+                                placeholder="Email"
                                 className="input-field pl-10"
-                                value={credentials.username}
-                                onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+                                value={credentials.email}
+                                onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
                             />
                         </div>
                         <div className="input-box relative">
