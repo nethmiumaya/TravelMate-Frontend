@@ -11,7 +11,8 @@
   font-family: "Poppins", sans-serif;
 }
 body {
-  background: url("src/assets/peakpx.jpg");
+    /*background: url("https://images.unsplash.com/photo-1612838320302-4b3b3b3b3b3b");*/
+    background-color: linen;
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;

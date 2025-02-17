@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { User, Lock } from 'lucide-react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp: React.FC = () => {
     const [credentials, setCredentials] = useState({
         name: '',
         email: '',
         newPassword: '',
-
     });
+
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,7 +23,7 @@ const SignUp: React.FC = () => {
             });
 
             if (response.data.success) {
-                // Handle successful sign-up (e.g., navigate to login page or show a success message)
+                navigate('/home'); // Navigate to the home page after successful sign-up
             } else {
                 throw new Error(response.data.message || 'Sign-up failed');
             }

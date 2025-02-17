@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '../slices/loginSlice'; // Add this line
+import itineraryReducer from '../slices/itinerarySlice';
+import authReducer from "../slices/loginSlice.ts";
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
+        itinerary: itineraryReducer,
     },
 });
 
