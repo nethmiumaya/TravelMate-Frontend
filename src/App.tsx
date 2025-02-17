@@ -9,6 +9,8 @@ import CreateItinerary from "./component/createItinerary.tsx";
 import LoginForm from "./pages/Login.tsx";
 import SignUp from "./pages/signUp.tsx";
 import Layout from "./component/Layout.tsx";
+import CreateDestination from './component/createDestination.tsx';
+import DestinationList from './component/DestinationList.tsx';
 
 function App() {
     return (
@@ -22,6 +24,8 @@ function App() {
                             <Route path="home" element={<Home />} />
                             <Route path="itineraries" element={<ItineraryList />} />
                             <Route path="itineraries/:id" element={<ItineraryDetails />} />
+                            <Route path="itineraries/:itineraryId/destinations/create" element={<CreateDestination />} />
+                            <Route path="destinations" element={<DestinationList />} />
                             <Route path="create" element={<CreateItinerary />} />
                         </Route>
                     </Route>

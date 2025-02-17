@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Calendar, Clock, MapPin } from 'lucide-react';
 import type { RootState } from '../store/store';
@@ -34,6 +34,15 @@ const ItineraryDetails: React.FC = () => {
                     </div>
                 </div>
                 <p className="mt-4 text-gray-600">{itinerary.description}</p>
+            </div>
+
+            <div className="flex justify-end">
+                <Link
+                    to={`/itineraries/${itinerary.id}/destinations/create`}
+                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700"
+                >
+                    Add Destination
+                </Link>
             </div>
 
             <div className="space-y-6">
