@@ -45,8 +45,8 @@ const ItineraryDetails = () => {
                 <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="w-5 h-5" />
                     <span>
-                        {new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}
-                    </span>
+            {new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}
+          </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="w-5 h-5" />
@@ -68,7 +68,7 @@ const ItineraryDetails = () => {
                                     <p className="text-gray-600 mb-2">{activity.description}</p>
                                     <div className="flex items-center gap-2 text-gray-500">
                                         <Clock className="w-4 h-4" />
-                                        <span>{new Date(activity.date).toLocaleDateString()} at {activity.time}</span>
+                                        <span>{new Date(activity.date).toLocaleDateString()}</span>
                                     </div>
                                 </div>
                             ))}

@@ -6,7 +6,7 @@ import { Calendar, MapPin, Clock } from 'lucide-react';
 const SharedItinerary = () => {
     const { id } = useParams<{ id: string }>();
     const itinerary = useSelector((state: RootState) =>
-        state.itineraries.items.find(item => item.id === Number(id) && item.shared)
+        state.itineraries.items.find(item => item.id === id && item.shared)
     );
 
     if (!itinerary) {
@@ -50,7 +50,7 @@ const SharedItinerary = () => {
                                     <p className="text-gray-600 mb-2">{activity.description}</p>
                                     <div className="flex items-center gap-2 text-gray-500">
                                         <Clock className="w-4 h-4" />
-                                        <span>{new Date(activity.date).toLocaleDateString()} at {activity.time}</span>
+                                        <span>{activity.date} at {activity.time}</span>
                                     </div>
                                 </div>
                             ))}

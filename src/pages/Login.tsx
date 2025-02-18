@@ -3,39 +3,24 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../store/slices/authSlice';
 import { LogIn } from 'lucide-react';
-import axios from 'axios';
-import {AppDispatch} from "../store/store.ts";
 
 const Login = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch<AppDispatch>();
+    const dispatch = useDispatch();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        try {
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
-                email: formData.email,
-                password: formData.password,
-            });
-            // dispatch(setUser(response.data.user));
-            dispatch(setUser( {
-                id: 1,
-                name: "John Doe",
-                email: "john.doe@example.com",
-                password: "securepassword123",
-                createdAt: new Date("2023-01-01T00:00:00Z"),
-                itineraries: []
-            }));
-            navigate('/dashboard');
-        } catch (error) {
-            console.error('Login failed:', error);
-            alert('Login failed. Please check your credentials and try again.');
-        }
+        // Simulated login - replace with actual authentication
+        dispatch(setUser({
+            id: '1',
+            name: 'John Doe',
+            email: formData.email,
+        }));
+        navigate('/dashboard');
     };
 
     return (
