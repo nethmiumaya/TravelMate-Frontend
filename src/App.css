@@ -4,7 +4,21 @@
   padding: 2rem;
   text-align: center;
 }
+.bg-white {
+  background-color: #ffffff;
+}
 
+.shadow-md {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.text-gray-600 {
+  color: #718096;
+}
+
+.hover\:text-blue-600:hover {
+  color: #3182ce;
+}
 .logo {
   height: 6em;
   padding: 1.5em;

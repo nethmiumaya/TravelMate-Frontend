@@ -1,42 +1,37 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
-import { store } from './store/store';
-import RootLayout from "./component/RootLayout.tsx";
-import Home from "./component/Home.tsx";
-import ItineraryList from "./component/ItineraryList.tsx";
-import ItineraryDetails from "./component/ItineraryDetails.tsx";
-import CreateItinerary from "./component/createItinerary.tsx";
-import LoginForm from "./pages/Login.tsx";
-import SignUp from "./pages/signUp.tsx";
-import Layout from "./component/Layout.tsx";
-import CreateDestination from './component/createDestination.tsx';
-import DestinationList from './component/DestinationList.tsx';
-import CreateActivity from './component/createActivity.tsx';
-import ActivityList from './component/ActivityList.tsx';
-import ActivityDetails from './component/ActivityDetails.tsx';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import ItineraryDetails from './pages/ItineraryDetails';
+import Login from './pages/Login';
+import Profile from './pages/Profile';
+import SharedItinerary from './pages/SharedItinerary';
+import {store} from "./store/store.ts";
+import Navbar from './component/Navbar';
+import CreateItinerary from "./pages/CreateItinerary.tsx";
+import Register from "./pages/SignUp.tsx";
 
 function App() {
     return (
         <Provider store={store}>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<RootLayout />}>
-                        <Route index element={<LoginForm />} />
-                        <Route path="signup" element={<SignUp />} />
-                        <Route element={<Layout />}>
-                            <Route path="home" element={<Home />} />
-                            <Route path="itineraries" element={<ItineraryList />} />
-                            <Route path="itineraries/:id" element={<ItineraryDetails />} />
-                            <Route path="itineraries/:itineraryId/destinations/create" element={<CreateDestination />} />
-                            <Route path="destinations" element={<DestinationList />} />
-                            <Route path="create" element={<CreateItinerary />} />
-                            <Route path="destinations/:destinationId/activities/create" element={<CreateActivity />} />
-                            <Route path="activities" element={<ActivityList />} />
-                            <Route path="activities/:id" element={<ActivityDetails />} />
-                        </Route>
-                    </Route>
-                </Routes>
-            </BrowserRouter>
+            <Router>
+                <div className="min-h-screen bg-gray-50">
+                    <Navbar />
+                    <main className="container mx-auto px-4 py-8">
+                        <Routes>
+                            <Route path="/" element={<Home />} />
+                            <Route path="/profile" element={<Profile />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/itinerary/new" element={<CreateItinerary />} />
+                            <Route path="/itinerary/:id" element={<ItineraryDetails />} />
+                            <Route path="/itinerary/:id/edit" element={<CreateItinerary />} />
+                            <Route path="/shared/:id" element={<SharedItinerary />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/register" element={<Register />} />
+                        </Routes>
+                    </main>
+                </div>
+            </Router>
         </Provider>
     );
 }
