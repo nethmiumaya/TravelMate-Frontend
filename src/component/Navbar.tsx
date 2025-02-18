@@ -13,7 +13,6 @@ const Navbar = () => {
         dispatch(logout());
         navigate('/');
     };
-    console.log(user);
 
     return (
         <nav className="bg-white shadow-md">
