@@ -16,28 +16,18 @@ export interface Activity {
     date: Date;
     time: string; // Add this line
 }
-// export interface Itinerary {
-//     id: number;
-//     userId: number;
-//     user: User;
-//     title: string;
-//     description: string; // Add this line
-//     startDate: Date;
-//     endDate: Date;
-//     createdAt: Date;
-//     destinations: Destination[];
-//     sharedWith: SharedItinerary[];
-// }
-
 export interface Itinerary {
     id: number;
+    userId: number;
+    user: User;
     title: string;
-    description: string;
-    startDate: string;
-    endDate: string;
+    startDate: Date;
+    endDate: Date;
+    createdAt: Date;
     destinations: Destination[];
-    shared: boolean; // Add this line
+    sharedWith: SharedItinerary[];
 }
+
 
 export interface Destination {
     id: number;
