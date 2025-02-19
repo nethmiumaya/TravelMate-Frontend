@@ -13,10 +13,12 @@ const Register = () => {
         password: '',
     });
     const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false); // Add loading state
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setIsLoading(true); // Start loading
 
         try {
             const response = await fetch('http://localhost:5000/api/auth/signup', {
@@ -31,20 +33,33 @@ const Register = () => {
 
             if (!response.ok) {
                 setError(data.message || 'Something went wrong');
+                setIsLoading(false); // Stop loading on error
                 return;
             }
 
+            // Check if user object exists in the response
+            if (!data.user) {
+                setError('User data is missing in the response');
+                setIsLoading(false); // Stop loading on error
+                return;
+            }
+
+            // Store user data in Redux store
             dispatch(setUser({
                 id: data.user.id,
                 name: data.user.name,
                 email: data.user.email,
                 password: data.user.password,
-                createdAt: new Date(data.user.createdAt),
+                createdAt: data.user.createdAt, // Store as string
                 itineraries: data.user.itineraries || [],
             }));
+
+            // Navigate to the dashboard
             navigate('/dashboard');
-        } catch (error) {
+        } catch (err) {
+            console.error(err);
             setError('Internal Server Error');
+            setIsLoading(false); // Stop loading on error
         }
     };
 
@@ -55,7 +70,6 @@ const Register = () => {
                 <h1 className="text-3xl font-bold text-gray-900">Create Account</h1>
                 <p className="text-gray-600 mt-2">Join us to start planning your adventures</p>
             </div>
-
             <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-sm">
                 <div className="space-y-6">
                     <div>
@@ -71,7 +85,6 @@ const Register = () => {
                             required
                         />
                     </div>
-
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                             Email
@@ -85,7 +98,6 @@ const Register = () => {
                             required
                         />
                     </div>
-
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                             Password
@@ -99,18 +111,18 @@ const Register = () => {
                             required
                         />
                     </div>
-
                     {error && <p className="text-red-600">{error}</p>}
-
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        disabled={isLoading} // Disable button while loading
+                        className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors ${
+                            isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                     >
-                        Create Account
+                        {isLoading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </div>
             </form>
-
             <p className="text-center mt-6 text-gray-600">
                 Already have an account?{' '}
                 <Link to="/login" className="text-blue-600 hover:underline">

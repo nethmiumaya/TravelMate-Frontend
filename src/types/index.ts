@@ -4,7 +4,7 @@ export interface User {
     email: string;
     password: string;
     createdAt: Date;
-    itineraries: Itinerary[];
+   itineraries: Itinerary[];
 }
 
 export interface Activity {
