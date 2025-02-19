@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setUser } from '../store/slices/authSlice';
 import { LogIn } from 'lucide-react';
 
+
 const Login = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -11,16 +12,48 @@ const Login = () => {
         email: '',
         password: '',
     });
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Simulated login - replace with actual authentication
-        dispatch(setUser({
-            id: '1',
-            name: 'John Doe',
-            email: formData.email,
-        }));
-        navigate('/dashboard');
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+
+            // Store token in localStorage
+            localStorage.setItem('token', data.token);
+
+            // Dispatch user data to Redux
+            dispatch(setUser({
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email,
+                createdAt: data.user.createdAt,
+                itineraries: data.user.itineraries,
+                // Add other user fields as needed
+            }));
+
+            navigate('/dashboard');
+        } catch (error) {
+            setError(error instanceof Error ? error.message : 'Login failed');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
