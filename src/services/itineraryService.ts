@@ -45,3 +45,8 @@ export const updateActivity = async (id: number, data: any) => {
     const response = await axios.put(`${API_URL}/activities/${id}`, data, getAuthHeaders());
     return response.data;
 };
+// Fetch all itineraries
+export const getItineraries = async () => {
+    const response = await axios.get(`${API_URL}/itineraries`, getAuthHeaders());
+    return response.data;
+};
