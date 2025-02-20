@@ -1,22 +1,18 @@
 import { Link } from 'react-router-dom';
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../types';
 import { Calendar, MapPin, Plus } from 'lucide-react';
-import {useEffect} from "react";
-import {fetchItineraries} from "../store/slices/itinerarySlice.ts";
+import { useEffect } from 'react';
+import { deleteItineraryThunk, fetchItineraries } from '../store/slices/itinerarySlice.ts';
 
 const Dashboard = () => {
     const dispatch = useDispatch();
     const { items: itineraries, loading, error } = useSelector((state: RootState) => state.itineraries);
 
-    // 2) Dispatch fetchItineraries when the component mounts
     useEffect(() => {
         dispatch(fetchItineraries() as any);
-        // ^ cast to "any" if TypeScript complains,
-        //   or properly type your dispatch with ThunkDispatch<...>
     }, [dispatch]);
 
-    // 3) Show a loading spinner or error if needed
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[60vh]">
@@ -75,18 +71,18 @@ const Dashboard = () => {
                                     <span>{itinerary.destinations?.length || 0} Destinations</span>
                                 </div>
                                 <div className="flex gap-2">
-                                <Link
+                                    <Link
                                         to={`/itinerary/${itinerary.id}`}
                                         className="flex-1 text-center bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
                                     >
                                         View Details
                                     </Link>
-                                    <Link
-                                        to={`/itinerary/${itinerary.id}/edit`}
-                                        className="flex-1 text-center border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors"
+                                    <button
+                                        onClick={() => dispatch(deleteItineraryThunk(itinerary.id))}
+                                        className="flex-1 text-center border border-red-600 text-red-600 px-4 py-2 rounded-md hover:bg-red-50 transition-colors"
                                     >
-                                        Edit
-                                    </Link>
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>

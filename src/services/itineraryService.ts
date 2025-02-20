@@ -58,3 +58,8 @@ export const getItineraryById = async (id: number) => {
         throw error;
     }
 };
+
+export const deleteItineraryById = async (id: number) => {
+    const response = await axios.delete(`${API_URL}/itineraries/${id}`, getAuthHeaders());
+    return response.data;
+};

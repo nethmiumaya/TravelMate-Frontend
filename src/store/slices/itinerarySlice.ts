@@ -1,13 +1,27 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Itinerary, ItineraryState } from '../../types';
-import { getItineraries, getItineraryById } from '../../services/itineraryService';
+import { getItineraries, getItineraryById, deleteItineraryById } from '../../services/itineraryService';
 
 const initialState: ItineraryState = {
     items: [],
     loading: false,
     error: null,
 };
-// Fetch a single itinerary by ID
+
+// Async thunk to fetch all itineraries
+export const fetchItineraries = createAsyncThunk(
+    'itineraries/fetchItineraries',
+    async (_, { rejectWithValue }) => {
+        try {
+            const data = await getItineraries();
+            return data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Error fetching itineraries');
+        }
+    }
+);
+
+// Async thunk to fetch a single itinerary by ID
 export const fetchItineraryById = createAsyncThunk(
     'itineraries/fetchItineraryById',
     async (id: number, { rejectWithValue }) => {
@@ -19,15 +33,16 @@ export const fetchItineraryById = createAsyncThunk(
         }
     }
 );
-// Async thunk to fetch all itineraries
-export const fetchItineraries = createAsyncThunk(
-    'itineraries/fetchItineraries',
-    async (_, { rejectWithValue }) => {
+
+// Async thunk to delete an itinerary
+export const deleteItineraryThunk = createAsyncThunk(
+    'itineraries/deleteItinerary',
+    async (id: number, { rejectWithValue }) => {
         try {
-            const data = await getItineraries();
-            return data;
+            await deleteItineraryById(id);
+            return id;
         } catch (error: any) {
-            return rejectWithValue(error.response?.data || 'Error fetching itineraries');
+            return rejectWithValue(error.response?.data || 'Error deleting itinerary');
         }
     }
 );
@@ -89,6 +104,18 @@ const itinerarySlice = createSlice({
                 }
             })
             .addCase(fetchItineraryById.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(deleteItineraryThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(deleteItineraryThunk.fulfilled, (state, action: PayloadAction<number>) => {
+                state.loading = false;
+                state.items = state.items.filter(item => item.id !== action.payload);
+            })
+            .addCase(deleteItineraryThunk.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

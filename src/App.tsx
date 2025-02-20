@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import Home from './pages/Home';
@@ -8,9 +7,9 @@ import CreateItinerary from './pages/CreateItinerary';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import SharedItinerary from './pages/SharedItinerary';
-import {store} from "./store/store.ts";
-import Navbar from "./component/Navbar.tsx";
-import Register from './pages/SignUp.tsx';
+import { store } from './store/store';
+import Navbar from './component/Navbar';
+import Register from './pages/SignUp';
 
 function App() {
     return (
