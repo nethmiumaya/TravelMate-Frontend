@@ -66,14 +66,12 @@ const Dashboard = () => {
                         <div key={itinerary.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="p-6">
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{itinerary.title}</h3>
-                                <p className="text-gray-600 mb-4">{itinerary.description}</p>
                                 <div className="flex items-center gap-2 text-gray-500 mb-4">
                                     <Calendar className="w-4 h-4" />
                                     <span>{new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-500 mb-6">
                                     <MapPin className="w-4 h-4"/>
-                                    {/*<span>{itinerary.destinations.length} Destinations</span>*/}
                                     <span>{itinerary.destinations?.length || 0} Destinations</span>
                                 </div>
                                 <div className="flex gap-2">

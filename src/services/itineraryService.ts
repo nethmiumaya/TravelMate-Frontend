@@ -14,7 +14,6 @@ const getAuthHeaders = () => {
     };
 };
 
-// Existing create methods
 export const createItinerary = async (data: any) => {
     const response = await axios.post(`${API_URL}/itineraries`, data, getAuthHeaders());
     return response.data;
@@ -30,7 +29,6 @@ export const createActivity = async (data: any) => {
     return response.data;
 };
 
-// Example update methods (if your backend supports them)
 export const updateItinerary = async (id: number, data: any) => {
     const response = await axios.put(`${API_URL}/itineraries/${id}`, data, getAuthHeaders());
     return response.data;
@@ -45,8 +43,18 @@ export const updateActivity = async (id: number, data: any) => {
     const response = await axios.put(`${API_URL}/activities/${id}`, data, getAuthHeaders());
     return response.data;
 };
-// Fetch all itineraries
+
 export const getItineraries = async () => {
     const response = await axios.get(`${API_URL}/itineraries`, getAuthHeaders());
     return response.data;
+};
+
+export const getItineraryById = async (id: number) => {
+    try {
+        const response = await axios.get(`${API_URL}/itineraries/${id}`, getAuthHeaders());
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching itinerary:", error);
+        throw error;
+    }
 };

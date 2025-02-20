@@ -1,38 +1,41 @@
-// itinerarySlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Itinerary, ItineraryState } from '../../types';
-import { getItineraries } from '../../services/itineraryService';
+import { getItineraries, getItineraryById } from '../../services/itineraryService';
 
 const initialState: ItineraryState = {
     items: [],
     loading: false,
     error: null,
 };
-
-// Async thunk that calls getItineraries
+// Fetch a single itinerary by ID
+export const fetchItineraryById = createAsyncThunk(
+    'itineraries/fetchItineraryById',
+    async (id: number, { rejectWithValue }) => {
+        try {
+            const data = await getItineraryById(id);
+            return data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Error fetching itinerary');
+        }
+    }
+);
+// Async thunk to fetch all itineraries
 export const fetchItineraries = createAsyncThunk(
     'itineraries/fetchItineraries',
     async (_, { rejectWithValue }) => {
         try {
             const data = await getItineraries();
-            // Ensure every itinerary has a destinations array
-            const itinerariesWithDefaults = data.map((itinerary: any) => ({
-                ...itinerary,
-                destinations: itinerary.destinations || [],
-            }));
-            return itinerariesWithDefaults;
+            return data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || 'Error fetching itineraries');
         }
     }
 );
 
-
 const itinerarySlice = createSlice({
     name: 'itineraries',
     initialState,
     reducers: {
-        // You can keep these if you still want them
         setItineraries: (state, action: PayloadAction<Itinerary[]>) => {
             state.items = action.payload;
             state.loading = false;
@@ -66,9 +69,26 @@ const itinerarySlice = createSlice({
             })
             .addCase(fetchItineraries.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload; // from the backend
+                state.items = action.payload;
             })
             .addCase(fetchItineraries.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchItineraryById.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchItineraryById.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.items.findIndex(item => item.id === action.payload.id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                } else {
+                    state.items.push(action.payload);
+                }
+            })
+            .addCase(fetchItineraryById.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });
