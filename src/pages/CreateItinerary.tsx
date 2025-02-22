@@ -2,31 +2,41 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-    addItinerary, // Or remove if you only want to rely on backend
-    updateItinerary as reduxUpdateItinerary, // rename to avoid confusion with service
+    addItinerary,
+    updateItinerary as reduxUpdateItinerary,
 } from '../store/slices/itinerarySlice';
 import { RootState, Destination, Activity } from '../types';
 import { Plus, Trash2 } from 'lucide-react';
 
-// Import your service methods
 import {
     createItinerary,
     createDestination,
     createActivity,
     updateItinerary as serviceUpdateItinerary,
-    updateDestination,
-    updateActivity,
+    updateDestination as serviceUpdateDestination,
+    updateActivity as serviceUpdateActivity,
 } from '../services/itineraryService';
+
+// Utility function to deep clone destinations and their activities
+const cloneDestinations = (destinations: Destination[] = []): Destination[] => {
+    return destinations.map((destination) => ({
+        ...destination,
+        activities: destination.activities
+            ? destination.activities.map((activity) => ({ ...activity }))
+            : [],
+    }));
+};
 
 const CreateItinerary = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const existingItinerary = useSelector((state: RootState) =>
-        state.itineraries.items.find(item => item.id === Number(id))
+        state.itineraries.items.find((item) => item.id === Number(id))
     );
     const { user } = useSelector((state: RootState) => state.auth);
 
+    // Initialize local state with a deep clone of existing destinations, if any.
     const [formData, setFormData] = useState({
         userId: user?.id || '',
         title: existingItinerary?.title || '',
@@ -36,17 +46,15 @@ const CreateItinerary = () => {
         endDate: existingItinerary?.endDate
             ? new Date(existingItinerary.endDate).toISOString().split('T')[0]
             : '',
-        destinations: existingItinerary?.destinations || [],
+        destinations: existingItinerary
+            ? cloneDestinations(existingItinerary.destinations)
+            : [],
     });
 
-    // ---------------------------------
-    // Main submit handler
-    // ---------------------------------
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user) return;
 
-        // Basic itinerary object
         const itineraryData = {
             userId: user.id,
             title: formData.title,
@@ -57,33 +65,27 @@ const CreateItinerary = () => {
         try {
             let savedItinerary: any;
 
-            // 1) Create or update itinerary
             if (id) {
-                // Update existing itinerary in backend
                 savedItinerary = await serviceUpdateItinerary(Number(id), itineraryData);
-
-                // Also update in Redux if desired
-                dispatch(reduxUpdateItinerary({ ...itineraryData, id: Number(id) }));
+                if (!savedItinerary || !savedItinerary.id) {
+                    throw new Error('Failed to update itinerary: Invalid response from server');
+                }
+                dispatch(reduxUpdateItinerary(savedItinerary));
             } else {
-                // Create new itinerary in backend
                 savedItinerary = await createItinerary(itineraryData);
-
-                // Add to Redux store if desired
-                dispatch(addItinerary({
-                    ...savedItinerary,
-                    destinations: formData.destinations,
-                }));
+                dispatch(
+                    addItinerary({
+                        ...savedItinerary,
+                        destinations: formData.destinations,
+                    })
+                );
             }
 
-            // 2) Create or update destinations and activities
-            //    (If your backend automatically creates them in a single request,
-            //     you can skip these loops and just rely on the single itinerary endpoint)
             for (const destination of formData.destinations) {
                 let savedDestination: any;
 
                 if (id && destination.id) {
-                    // If you already have a destination ID, call update
-                    savedDestination = await updateDestination(destination.id, {
+                    savedDestination = await serviceUpdateDestination(destination.id, {
                         itineraryId: savedItinerary.id,
                         name: destination.name,
                         location: destination.location,
@@ -91,7 +93,6 @@ const CreateItinerary = () => {
                         longitude: destination.longitude,
                     });
                 } else {
-                    // Otherwise create new
                     savedDestination = await createDestination({
                         itineraryId: savedItinerary.id,
                         name: destination.name,
@@ -101,38 +102,31 @@ const CreateItinerary = () => {
                     });
                 }
 
-                // Now handle each activity for this destination
                 for (const activity of destination.activities) {
                     if (id && activity.id) {
-                        await updateActivity(activity.id, {
+                        await serviceUpdateActivity(activity.id, {
                             destinationId: savedDestination.id,
                             title: activity.title,
                             description: activity.description,
-                            date: activity.date,
+                            date: new Date(activity.date).toISOString(), // Convert date to string
                         });
                     } else {
                         await createActivity({
                             destinationId: savedDestination.id,
                             title: activity.title,
                             description: activity.description,
-                            date: activity.date,
+                            date: new Date(activity.date).toISOString(), // Convert date to string
                         });
                     }
                 }
             }
 
-            // 3) Navigate after successful save
             navigate('/dashboard');
         } catch (error) {
             console.error('Error saving itinerary:', error);
-            // Handle error (show message, etc.)
         }
     };
 
-    // ---------------------------------
-    // Handlers for adding/removing destinations & activities
-    // (unchanged from your original code, just keep them)
-    // ---------------------------------
     const addDestination = () => {
         const newDestination: Destination = {
             id: Date.now(),
@@ -144,7 +138,7 @@ const CreateItinerary = () => {
             activities: [],
         };
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             destinations: [...prev.destinations, newDestination],
         }));
@@ -157,30 +151,47 @@ const CreateItinerary = () => {
             destinationId: newDestinations[destinationIndex].id,
             title: '',
             description: '',
-            date: new Date(),
+            date: new Date().toISOString(), // Convert date to string
         };
 
-        newDestinations[destinationIndex].activities.push(newActivity);
+        newDestinations[destinationIndex] = {
+            ...newDestinations[destinationIndex],
+            activities: [
+                ...newDestinations[destinationIndex].activities,
+                newActivity,
+            ],
+        };
         setFormData({ ...formData, destinations: newDestinations });
     };
 
     const updateDestination = (index: number, data: Partial<Destination>) => {
-        const newDestinations = [...formData.destinations];
-        newDestinations[index] = { ...newDestinations[index], ...data };
-        setFormData({ ...formData, destinations: newDestinations });
+        setFormData((prevFormData) => {
+            const newDestinations = [...prevFormData.destinations];
+            newDestinations[index] = { ...newDestinations[index], ...data };
+            return { ...prevFormData, destinations: newDestinations };
+        });
     };
 
-    const updateActivity = (destinationIndex: number, activityIndex: number, data: Partial<Activity>) => {
-        const newDestinations = [...formData.destinations];
-        newDestinations[destinationIndex].activities[activityIndex] = {
-            ...newDestinations[destinationIndex].activities[activityIndex],
-            ...data,
-        };
-        setFormData({ ...formData, destinations: newDestinations });
+    const updateActivity = (
+        destinationIndex: number,
+        activityIndex: number,
+        data: Partial<Activity>
+    ) => {
+        setFormData((prevFormData) => {
+            const newDestinations = [...prevFormData.destinations];
+            const newActivities = newDestinations[destinationIndex].activities.map((activity, idx) =>
+                idx === activityIndex ? { ...activity, ...data } : activity
+            );
+            newDestinations[destinationIndex] = {
+                ...newDestinations[destinationIndex],
+                activities: newActivities,
+            };
+            return { ...prevFormData, destinations: newDestinations };
+        });
     };
 
     const removeDestination = (index: number) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             destinations: prev.destinations.filter((_, i) => i !== index),
         }));
@@ -188,15 +199,30 @@ const CreateItinerary = () => {
 
     const removeActivity = (destinationIndex: number, activityIndex: number) => {
         const newDestinations = [...formData.destinations];
-        newDestinations[destinationIndex].activities = newDestinations[destinationIndex].activities.filter(
-            (_, i) => i !== activityIndex
-        );
+        newDestinations[destinationIndex] = {
+            ...newDestinations[destinationIndex],
+            activities: newDestinations[destinationIndex].activities.filter(
+                (_, i) => i !== activityIndex
+            ),
+        };
         setFormData({ ...formData, destinations: newDestinations });
     };
 
-    // ---------------------------------
-    // JSX Markup
-    // ---------------------------------
+    const onChange = (
+        destinationIndex: number,
+        activityIndex: number,
+        event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value } = event.target;
+        let newValue: any = value;
+
+        if (name === 'date') {
+            newValue = new Date(value).toISOString();
+        }
+
+        updateActivity(destinationIndex, activityIndex, { [name]: newValue });
+    };
+
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-gray-900 mb-8">
@@ -204,7 +230,6 @@ const CreateItinerary = () => {
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Basic Info Fields */}
                 <div className="space-y-4">
                     <div>
                         <label htmlFor="userId" className="block text-sm font-medium text-gray-700 mb-1">
@@ -264,7 +289,6 @@ const CreateItinerary = () => {
                     </div>
                 </div>
 
-                {/* Destinations & Activities */}
                 <div className="space-y-6">
                     <div className="flex justify-between items-center">
                         <h2 className="text-xl font-semibold text-gray-900">Destinations</h2>
@@ -281,9 +305,7 @@ const CreateItinerary = () => {
                     {formData.destinations.map((destination, destinationIndex) => (
                         <div key={destination.id} className="bg-white p-6 rounded-lg shadow-sm">
                             <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
-                                    Destination {destinationIndex + 1}
-                                </h3>
+                                <h3 className="text-lg font-semibold text-gray-900">Destination {destinationIndex + 1}</h3>
                                 <button
                                     type="button"
                                     onClick={() => removeDestination(destinationIndex)}
@@ -294,168 +316,136 @@ const CreateItinerary = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Name
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={destination.name}
-                                            onChange={(e) =>
-                                                updateDestination(destinationIndex, { name: e.target.value })
-                                            }
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Location
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={destination.location}
-                                            onChange={(e) =>
-                                                updateDestination(destinationIndex, { location: e.target.value })
-                                            }
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Latitude
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={destination.latitude}
-                                            onChange={(e) =>
-                                                updateDestination(destinationIndex, {
-                                                    latitude: parseFloat(e.target.value),
-                                                })
-                                            }
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Longitude
-                                        </label>
-                                        <input
-                                            type="number"
-                                            value={destination.longitude}
-                                            onChange={(e) =>
-                                                updateDestination(destinationIndex, {
-                                                    longitude: parseFloat(e.target.value),
-                                                })
-                                            }
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
                                 <div>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h4 className="text-md font-medium text-gray-900">Activities</h4>
-                                        <button
-                                            type="button"
-                                            onClick={() => addActivity(destinationIndex)}
-                                            className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                            Add Activity
-                                        </button>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {destination.activities.map((activity, activityIndex) => (
-                                            <div key={activity.id} className="bg-gray-50 p-4 rounded-md">
-                                                <div className="flex justify-between items-start mb-4">
-                                                    <h5 className="text-sm font-medium text-gray-900">
-                                                        Activity {activityIndex + 1}
-                                                    </h5>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeActivity(destinationIndex, activityIndex)}
-                                                        className="text-red-600 hover:text-red-700"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            Title
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={activity.title}
-                                                            onChange={(e) =>
-                                                                updateActivity(destinationIndex, activityIndex, {
-                                                                    title: e.target.value,
-                                                                })
-                                                            }
-                                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            Description
-                                                        </label>
-                                                        <textarea
-                                                            value={activity.description}
-                                                            onChange={(e) =>
-                                                                updateActivity(destinationIndex, activityIndex, {
-                                                                    description: e.target.value,
-                                                                })
-                                                            }
-                                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                            rows={2}
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                            Date
-                                                        </label>
-                                                        <input
-                                                            type="date"
-                                                            value={
-                                                                activity.date instanceof Date
-                                                                    ? activity.date.toISOString().split('T')[0]
-                                                                    : ''
-                                                            }
-                                                            onChange={(e) =>
-                                                                updateActivity(destinationIndex, activityIndex, {
-                                                                    date: new Date(e.target.value),
-                                                                })
-                                                            }
-                                                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                            required
-                                                        />
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <label htmlFor={`destinationName-${destinationIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        Name
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id={`destinationName-${destinationIndex}`}
+                                        value={destination.name}
+                                        onChange={(e) => updateDestination(destinationIndex, { name: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
                                 </div>
+                                <div>
+                                    <label htmlFor={`destinationLocation-${destinationIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        Location
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id={`destinationLocation-${destinationIndex}`}
+                                        value={destination.location}
+                                        onChange={(e) => updateDestination(destinationIndex, { location: e.target.value })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor={`destinationLatitude-${destinationIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        Latitude
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id={`destinationLatitude-${destinationIndex}`}
+                                        value={isNaN(destination.latitude) ? '' : destination.latitude}
+                                        onChange={(e) => updateDestination(destinationIndex, { latitude: parseFloat(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor={`destinationLongitude-${destinationIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                        Longitude
+                                    </label>
+                                    <input
+                                        type="number"
+                                        id={`destinationLongitude-${destinationIndex}`}
+                                        value={isNaN(destination.longitude) ? '' : destination.longitude}
+                                        onChange={(e) => updateDestination(destinationIndex, { longitude: parseFloat(e.target.value) })}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 mt-6">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-semibold text-gray-900">Activities</h3>
+                                    <button
+                                        type="button"
+                                        onClick={() => addActivity(destinationIndex)}
+                                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        Add Activity
+                                    </button>
+                                </div>
+
+                                {destination.activities.map((activity, activityIndex) => (
+                                    <div key={activity.id} className="border-l-4 border-blue-600 pl-4 py-2">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <h4 className="text-lg font-semibold text-gray-900">Activity {activityIndex + 1}</h4>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeActivity(destinationIndex, activityIndex)}
+                                                className="text-red-600 hover:text-red-700"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label htmlFor={`activityTitle-${destinationIndex}-${activityIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Title
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    id={`activityTitle-${destinationIndex}-${activityIndex}`}
+                                                    value={activity.title}
+                                                    onChange={(e) => onChange(destinationIndex, activityIndex, e)}
+                                                    name="title"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor={`activityDescription-${destinationIndex}-${activityIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Description
+                                                </label>
+                                                <textarea
+                                                    id={`activityDescription-${destinationIndex}-${activityIndex}`}
+                                                    value={activity.description}
+                                                    onChange={(e) => onChange(destinationIndex, activityIndex, e)}
+                                                    name="description"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                            <div>
+                                                <label htmlFor={`activityDate-${destinationIndex}-${activityIndex}`} className="block text-sm font-medium text-gray-700 mb-1">
+                                                    Date
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    id={`activityDate-${destinationIndex}-${activityIndex}`}
+                                                    value={new Date(activity.date).toISOString().split('T')[0]}
+                                                    onChange={(e) => onChange(destinationIndex, activityIndex, e)}
+                                                    name="date"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                    required
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Submit Buttons */}
                 <div className="flex justify-end gap-4">
                     <button
                         type="button"

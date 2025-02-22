@@ -14,7 +14,6 @@ export interface Activity {
     title: string;
     description: string;
     date: Date;
-    time: string; // Add this line
 }
 export interface Itinerary {
     id: number;

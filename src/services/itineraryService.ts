@@ -54,7 +54,7 @@ export const getItineraryById = async (id: number) => {
         const response = await axios.get(`${API_URL}/itineraries/${id}`, getAuthHeaders());
         return response.data;
     } catch (error) {
-        console.error("Error fetching itinerary:", error);
+        console.error('Error fetching itinerary:', error);
         throw error;
     }
 };

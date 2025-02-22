@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Itinerary, ItineraryState } from '../../types';
-import { getItineraries, getItineraryById, deleteItineraryById } from '../../services/itineraryService';
+import { getItineraries, getItineraryById, deleteItineraryById, updateItinerary } from '../../services/itineraryService';
 
 const initialState: ItineraryState = {
     items: [],
@@ -43,6 +43,19 @@ export const deleteItineraryThunk = createAsyncThunk(
             return id;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || 'Error deleting itinerary');
+        }
+    }
+);
+
+// Async thunk to edit an itinerary
+export const editItineraryThunk = createAsyncThunk(
+    'itineraries/editItinerary',
+    async ({ id, data }: { id: number, data: any }, { rejectWithValue }) => {
+        try {
+            const updatedItinerary = await updateItinerary(id, data);
+            return updatedItinerary;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Error updating itinerary');
         }
     }
 );
@@ -116,6 +129,21 @@ const itinerarySlice = createSlice({
                 state.items = state.items.filter(item => item.id !== action.payload);
             })
             .addCase(deleteItineraryThunk.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(editItineraryThunk.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editItineraryThunk.fulfilled, (state, action) => {
+                state.loading = false;
+                const index = state.items.findIndex(item => item.id === action.payload.id);
+                if (index !== -1) {
+                    state.items[index] = action.payload;
+                }
+            })
+            .addCase(editItineraryThunk.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

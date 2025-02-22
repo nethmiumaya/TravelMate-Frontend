@@ -14,6 +14,25 @@ const ItineraryDetails = () => {
     useEffect(() => {
             dispatch(fetchItineraryById(Number(id)) as any);
     }, [dispatch]);
+
+    const handleShare = () => {
+        if (itinerary) {
+            const shareData = {
+                title: itinerary.title,
+                text: `Check out this itinerary: ${itinerary.title}`,
+                url: window.location.href,
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => console.log('Itinerary shared successfully'))
+                    .catch((error) => console.error('Error sharing itinerary:', error));
+            } else {
+                console.error('Web Share API is not supported in this browser.');
+            }
+        }
+    };
+
 console.log(itinerary);
     if (!itinerary) {
         return (
@@ -36,15 +55,18 @@ console.log(itinerary);
                     )}
                 </div>
                 <div className="flex gap-4">
-                    <button className="flex items-center gap-2 border border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
-                        <Share2 className="w-5 h-5" />
+                    <button
+                        onClick={handleShare}
+                        className="flex items-center gap-2 border border-blue-600 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                        <Share2 className="w-5 h-5"/>
                         Share
                     </button>
                     <Link
                         to={`/itinerary/${id}/edit`}
                         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                     >
-                        <Edit className="w-5 h-5" />
+                        <Edit className="w-5 h-5"/>
                         Edit
                     </Link>
                 </div>
@@ -52,7 +74,7 @@ console.log(itinerary);
 
             <div className="flex items-center gap-6 mb-8">
                 <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-5 h-5" />
+                    <Calendar className="w-5 h-5"/>
                     <span>
                         {new Date(itinerary.startDate).toLocaleDateString()} -{' '}
                         {new Date(itinerary.endDate).toLocaleDateString()}
