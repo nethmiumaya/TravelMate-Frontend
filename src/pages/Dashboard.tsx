@@ -1,15 +1,31 @@
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../types';
 import { Calendar, MapPin, Plus } from 'lucide-react';
+import { useEffect } from 'react';
+import { deleteItineraryThunk, fetchItineraries } from '../store/slices/itinerarySlice.ts';
 
 const Dashboard = () => {
-    const { items: itineraries, loading } = useSelector((state: RootState) => state.itineraries);
+    const dispatch = useDispatch();
+    const { items: itineraries, loading, error } = useSelector((state: RootState) => state.itineraries);
+
+    useEffect(() => {
+        dispatch(fetchItineraries() as any);
+    }, [dispatch]);
 
     if (loading) {
         return (
             <div className="flex justify-center items-center min-h-[60vh]">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                <p className="text-red-500 mb-4">Error: {error}</p>
+                <p className="text-gray-500 mb-6">Could not load itineraries. Please try again later.</p>
             </div>
         );
     }
@@ -46,14 +62,13 @@ const Dashboard = () => {
                         <div key={itinerary.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="p-6">
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{itinerary.title}</h3>
-                                <p className="text-gray-600 mb-4">{itinerary.description}</p>
                                 <div className="flex items-center gap-2 text-gray-500 mb-4">
                                     <Calendar className="w-4 h-4" />
                                     <span>{new Date(itinerary.startDate).toLocaleDateString()} - {new Date(itinerary.endDate).toLocaleDateString()}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-500 mb-6">
-                                    <MapPin className="w-4 h-4" />
-                                    <span>{itinerary.destinations.length} Destinations</span>
+                                    <MapPin className="w-4 h-4"/>
+                                    <span>{itinerary.destinations?.length || 0} Destinations</span>
                                 </div>
                                 <div className="flex gap-2">
                                     <Link
@@ -62,12 +77,12 @@ const Dashboard = () => {
                                     >
                                         View Details
                                     </Link>
-                                    <Link
-                                        to={`/itinerary/${itinerary.id}/edit`}
-                                        className="flex-1 text-center border border-blue-600 text-blue-600 px-4 py-2 rounded-md hover:bg-blue-50 transition-colors"
+                                    <button
+                                        onClick={() => dispatch(deleteItineraryThunk(itinerary.id))}
+                                        className="flex-1 text-center border border-red-600 text-red-600 px-4 py-2 rounded-md hover:bg-red-50 transition-colors"
                                     >
-                                        Edit
-                                    </Link>
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>
