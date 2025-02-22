@@ -13,6 +13,7 @@ export const fetchItineraries = createAsyncThunk(
     'itineraries/fetchItineraries',
     async (_, { rejectWithValue }) => {
         try {
+            // This call includes the Authorization header via getAuthHeaders()
             const data = await getItineraries();
             return data;
         } catch (error: any) {
@@ -20,6 +21,7 @@ export const fetchItineraries = createAsyncThunk(
         }
     }
 );
+
 
 // Async thunk to fetch a single itinerary by ID
 export const fetchItineraryById = createAsyncThunk(

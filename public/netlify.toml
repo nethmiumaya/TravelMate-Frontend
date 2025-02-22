@@ -1,0 +1,10 @@
+[[redirects]]
+  from = "/*"
+  to = "index.html"
+  status = 200
+#  force = true
+#  headers = {X-From = "Netlify"}
+#
+# This configuration will redirect all requests to  /api/*  to  https://api.example.com/*  with a 200 status code. The  force  flag is set to  true  to force the redirect even if the destination is a different origin. The  headers  object is used to add a custom header to the response.
+# Redirects with query parameters
+# You can also use query parameters in your redirects. For example, if you want to redirect all requests to  /api/*  to  https://api.example.com/*  and pass the query parameters along, you can use the following configuration:
