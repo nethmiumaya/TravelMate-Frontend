@@ -1,50 +1,92 @@
-# React + TypeScript + Vite
+# TravelMate Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+TravelMate is a travel itinerary planner web application that helps users plan, manage, and share their travel itineraries. This is the frontend repository built using React, TypeScript, Redux, and Redux Thunk.
 
-Currently, two official plugins are available:
+## Features
+- User authentication (Login & Sign-up)
+- Create, update, and delete itineraries
+- Add destinations and activities
+- Search and filter itineraries
+- Share itineraries with others
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+- **Frontend**: React, TypeScript
+- **State Management**: Redux, Redux Thunk
+- **Backend API**: Node.js with Prisma and MySQL ([TravelMate Backend Repository](https://github.com/nethmiumaya/TavelMate-Backend.git))
 
-## Expanding the ESLint configuration
+## Setup & Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### Prerequisites
+Make sure you have the following installed on your system:
+- Node.js (>= 16.x)
+- npm or yarn
 
-- Configure the top-level `parserOptions` property like this:
+### Installation Steps
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/nethmiumaya/TavelMate-Frontend.git
+   ```
+2. Navigate to the project directory:
+   ```sh
+   cd TravelMate-Frontend
+   ```
+3. Install dependencies:
+   ```sh
+   npm install
+   ```
+   or
+   ```sh
+   yarn install
+   ```
+4. Start the development server:
+   ```sh
+   npm start
+   ```
+   or
+   ```sh
+   yarn start
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Configuration
+### Environment Variables
+Create a `.env` file in the root directory and configure the following variables:
+```
+REACT_APP_API_BASE_URL=http://localhost:5000/api
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## API Endpoints
+This frontend interacts with the following backend API endpoints:
+- **Authentication**:
+  - Sign-up: `POST /api/auth/signup`
+  - Login: `POST /api/auth/login`
+- **Itineraries**:
+  - Create: `POST /api/itineraries`
+  - Get all: `GET /api/itineraries`
+  - Get single: `GET /api/itineraries/:id`
+  - Update: `PUT /api/itineraries/:id`
+  - Delete: `DELETE /api/itineraries/:id`
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+## Folder Structure
 ```
+TravelMate-Frontend/
+│── src/
+│   ├── components/     # Reusable components
+│   ├── pages/          # Page components
+│   ├── redux/          # Redux store and slices
+│   ├── services/       # API service functions
+│   ├── hooks/          # Custom hooks
+│   ├── utils/          # Utility functions
+│   ├── App.tsx        # Main app entry point
+│   ├── index.tsx      # React entry file
+│── public/            # Static assets
+│── .env               # Environment variables
+│── package.json       # Project dependencies
+│── README.md          # Project documentation
+│── LICENSE            # License file
+```
+## License
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+For any inquiries or contributions, reach out to the repository owner.
+
