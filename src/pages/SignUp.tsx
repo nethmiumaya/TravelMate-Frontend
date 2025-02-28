@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setUser } from '../store/slices/authSlice';
 import { UserPlus } from 'lucide-react';
 
 const Register = () => {
@@ -13,12 +12,12 @@ const Register = () => {
         password: '',
     });
     const [error, setError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false); // Add loading state
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
-        setIsLoading(true); // Start loading
+        setIsLoading(true);
 
         try {
             const response = await fetch('http://localhost:5000/api/auth/signup', {
@@ -33,33 +32,22 @@ const Register = () => {
 
             if (!response.ok) {
                 setError(data.message || 'Something went wrong');
-                setIsLoading(false); // Stop loading on error
+                setIsLoading(false);
                 return;
             }
 
-            // Check if user object exists in the response
             if (!data.user) {
                 setError('User data is missing in the response');
-                setIsLoading(false); // Stop loading on error
+                setIsLoading(false);
                 return;
             }
 
-            // Store user data in Redux store
-            dispatch(setUser({
-                id: data.user.id,
-                name: data.user.name,
-                email: data.user.email,
-                password: data.user.password,
-                createdAt: data.user.createdAt, // Store as string
-                itineraries: data.user.itineraries || [],
-            }));
-
-            // Navigate to the dashboard
-            navigate('/dashboard');
+            // Navigate to the login page after successful sign-up
+            navigate('/login');
         } catch (err) {
             console.error(err);
             setError('Internal Server Error');
-            setIsLoading(false); // Stop loading on error
+            setIsLoading(false);
         }
     };
 
@@ -114,7 +102,7 @@ const Register = () => {
                     {error && <p className="text-red-600">{error}</p>}
                     <button
                         type="submit"
-                        disabled={isLoading} // Disable button while loading
+                        disabled={isLoading}
                         className={`w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors ${
                             isLoading ? 'opacity-50 cursor-not-allowed' : ''
                         }`}

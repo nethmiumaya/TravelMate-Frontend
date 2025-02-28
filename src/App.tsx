@@ -23,6 +23,7 @@ function App() {
                             <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/itinerary/new" element={<CreateItinerary />} />
                             <Route path="/itinerary/:id" element={<ItineraryDetails />} />
+                            <Route path="/shared/:sharedLink" element={<ItineraryDetails />} />
                             <Route path="/itinerary/:id/edit" element={<CreateItinerary />} />
                             <Route path="/shared/:id" element={<SharedItinerary />} />
                             <Route path="/login" element={<Login />} />
