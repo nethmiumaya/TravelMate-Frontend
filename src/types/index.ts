@@ -25,6 +25,7 @@ export interface Itinerary {
     createdAt: Date;
     destinations: Destination[];
     sharedWith: SharedItinerary[];
+    sharedLink?: string;  // Optional derived property
 }
 
 

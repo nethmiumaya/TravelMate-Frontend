@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Itinerary, ItineraryState } from '../../types';
 import { getItineraries, getItineraryById, deleteItineraryById, updateItinerary } from '../../services/itineraryService';
+import axios from "axios";
 
 const initialState: ItineraryState = {
     items: [],
@@ -22,6 +23,18 @@ export const fetchItineraries = createAsyncThunk(
     }
 );
 
+// Add to your itinerarySlice.ts
+export const fetchSharedItinerary = createAsyncThunk(
+    'itineraries/fetchSharedItinerary',
+    async (sharedLink: string, { rejectWithValue }) => {
+        try {
+            const response = await axios.get(`http://localhost:5000/api/itineraries/shared/${sharedLink}`);
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Error fetching shared itinerary');
+        }
+    }
+);
 
 // Async thunk to fetch a single itinerary by ID
 export const fetchItineraryById = createAsyncThunk(
