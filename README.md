@@ -9,6 +9,9 @@ TravelMate is a travel itinerary planner web application that helps users plan, 
 - Search and filter itineraries
 - Share itineraries with others
 
+## Project Images
+- 
+
 ## Tech Stack
 - **Frontend**: React, TypeScript
 - **State Management**: Redux, Redux Thunk
@@ -46,6 +49,20 @@ Make sure you have the following installed on your system:
    ```sh
    yarn start
    ```
+
+# TravelMate Frontend
+
+TravelMate is a travel itinerary planner web application that helps users plan, manage, and share their travel itineraries. This is the frontend repository built using React, TypeScript, Redux, and Redux Thunk.
+
+## Features
+- User authentication (Login & Sign-up)
+- Create, update, and delete itineraries
+- Add destinations and activities
+- Search and filter itineraries
+- Share itineraries with others
+
+## Project Images
+View the project images and additional resources on [Google Drive](https://drive.google.com/drive/u/0/folders/1M3_uw-mImllnB09hIfs4Se4rm4s4g5Vl).
 
 ## Configuration
 ### Environment Variables
