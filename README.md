@@ -10,7 +10,7 @@ TravelMate is a travel itinerary planner web application that helps users plan, 
 - Share itineraries with others
 
 ## Project Images
-- 
+- View the project images and additional resources on [Google Drive](https://drive.google.com/drive/u/0/folders/1M3_uw-mImllnB09hIfs4Se4rm4s4g5Vl).
 
 ## Tech Stack
 - **Frontend**: React, TypeScript
